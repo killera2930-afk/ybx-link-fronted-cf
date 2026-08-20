@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 5, 8, 20;
+  --card-bg: 11, 15, 30;
+  --border: 26, 35, 60;
+  --text-primary: 241, 245, 249;
+  --text-secondary: 148, 163, 184;
+}
+
+body {
+  background-color: #060919;
+  color: rgb(var(--text-primary));
+  font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  /* Ultra-lightweight performant gradient (0 lag) */
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 15%, rgba(139, 92, 246, 0.08) 0%, transparent 40%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* ============================================
+   ULTRA-PERFORMANT GPU ACCELERATED GLASS & CARDS
+   ============================================ */
+
+.cyber-glass {
+  background: rgba(9, 13, 33, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.cyber-card {
+  background: rgba(13, 18, 40, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transform: translateZ(0);
+  will-change: transform;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cyber-card:hover {
+  border-color: rgba(6, 182, 212, 0.4);
+  box-shadow: 0 8px 24px -4px rgba(6, 182, 212, 0.18);
+  transform: translateY(-2px);
+}
+
+/* Text Gradients */
+.gradient-text-cyan {
+  background: linear-gradient(135deg, #38bdf8 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-neon {
+  background: linear-gradient(135deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Performant Shimmer Button */
+.shimmer-btn {
+  transform: translateZ(0);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.shimmer-btn:hover {
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+}
+
+/* Lightweight Soundwave */
+@keyframes soundwave {
+  0%, 100% { height: 4px; }
+  50% { height: 16px; }
+}
+
+.wave-bar-1 { animation: soundwave 1s infinite ease-in-out; }
+.wave-bar-2 { animation: soundwave 0.8s infinite ease-in-out 0.2s; }
+.wave-bar-3 { animation: soundwave 1.1s infinite ease-in-out 0.4s; }
+.wave-bar-4 { animation: soundwave 0.9s infinite ease-in-out 0.1s; }
+
+/* Custom Lightweight Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #060919;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #06b6d4;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
