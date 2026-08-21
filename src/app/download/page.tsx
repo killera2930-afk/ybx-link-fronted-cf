@@ -3,7 +3,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { 
   Download, FileText, Film, Music, Image as ImageIcon, 
-  Loader2, AlertCircle, HardDrive, Zap, Copy, Check 
+  Loader2, AlertCircle, HardDrive, Zap 
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -57,9 +57,28 @@ function DownloadContent() {
   const [file, setFile] = useState<FileInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [isAllowedReferrer, setIsAllowedReferrer] = useState<boolean | null>(null);
+
+  // Leech Protection: Verify request originates from ybxanime.com
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const ref = (document.referrer || "").toLowerCase();
+      const isAllowed = 
+        ref.includes("ybxanime.com") || 
+        ref.includes("drive.ybxanime.com") || 
+        ref.includes("files.ybxanime.com") ||
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+
+      setIsAllowedReferrer(isAllowed);
+    }
+  }, []);
 
   useEffect(() => {
+    if (isAllowedReferrer === false) {
+      setLoading(false);
+      return;
+    }
     if (!fileId) {
       setError("No file ID or path provided.");
       setLoading(false);
@@ -71,16 +90,35 @@ function DownloadContent() {
     async function loadData() {
       let fetchedData: any = null;
 
+      const getSessionId = () => {
+        if (typeof window === "undefined") return "";
+        try {
+          let sid = sessionStorage.getItem("ybx_sid");
+          if (!sid) {
+            sid = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+            sessionStorage.setItem("ybx_sid", sid);
+          }
+          return sid;
+        } catch {
+          return "browser_session";
+        }
+      };
+      const sid = getSessionId();
+
       const endpoints = [
-        `/api/getToken/${fileId}`,
-        `${BACKEND_URL}/api/getToken/${fileId}`,
+        `/api/getToken/${fileId}?sid=${sid}`,
+        `${BACKEND_URL}/api/getToken/${fileId}?sid=${sid}`,
       ];
 
       const fetchEndpoint = async (url: string) => {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3500);
         try {
-          const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+          const res = await fetch(url, { 
+            cache: "no-store", 
+            signal: controller.signal,
+            headers: { "X-Session-ID": sid }
+          });
           clearTimeout(timeoutId);
           if (res.ok) {
             const data = await res.json();
@@ -140,12 +178,16 @@ function DownloadContent() {
     window.location.href = file.downloadPath;
   };
 
-  const handleCopyLink = () => {
-    if (!file?.downloadUrl) return;
-    navigator.clipboard.writeText(file.downloadUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  };
+  if (isAllowedReferrer === false) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#060919] text-white">
+        <div className="flex items-center gap-4 text-center">
+          <h1 className="text-3xl font-bold border-r border-slate-700 pr-4">404</h1>
+          <p className="text-sm text-slate-400">This page could not be found.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -254,24 +296,6 @@ function DownloadContent() {
                 <Download className="w-5 h-5" />
                 Download Now
               </motion.a>
-
-              {/* Copy Link Button for IDM / 1DM / ADM */}
-              <button
-                onClick={handleCopyLink}
-                className="w-full py-3 px-5 rounded-2xl bg-[#0e1433] hover:bg-[#131b45] border border-slate-700/60 text-slate-300 hover:text-white text-xs md:text-sm font-semibold flex items-center justify-center gap-2.5 transition-all duration-200"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4 text-emerald-400" />
-                    <span className="text-emerald-300">Link Copied to Clipboard!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4 text-cyan-400" />
-                    <span>Copy Link (for IDM / 1DM / ADM)</span>
-                  </>
-                )}
-              </button>
             </div>
 
             {/* Footer Powered By */}
