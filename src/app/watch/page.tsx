@@ -15,8 +15,28 @@ function WatchContent() {
   const [file, setFile] = useState<{ name: string; size: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAllowedReferrer, setIsAllowedReferrer] = useState<boolean | null>(null);
+
+  // Leech Protection: Verify request originates from ybxanime.com
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const ref = (document.referrer || "").toLowerCase();
+      const isAllowed = 
+        ref.includes("ybxanime.com") || 
+        ref.includes("drive.ybxanime.com") || 
+        ref.includes("files.ybxanime.com") ||
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+
+      setIsAllowedReferrer(isAllowed);
+    }
+  }, []);
 
   useEffect(() => {
+    if (isAllowedReferrer === false) {
+      setLoading(false);
+      return;
+    }
     if (!fileId) {
       setError("No file ID or path provided.");
       setLoading(false);
@@ -63,6 +83,17 @@ function WatchContent() {
     loadInfo();
     return () => { isMounted = false; };
   }, [fileId]);
+
+  if (isAllowedReferrer === false) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#060919] text-white">
+        <div className="flex items-center gap-4 text-center">
+          <h1 className="text-3xl font-bold border-r border-slate-700 pr-4">404</h1>
+          <p className="text-sm text-slate-400">This page could not be found.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
